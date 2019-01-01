@@ -1,0 +1,3 @@
+# sLightShow: slide projector control software
+
+So awesome words cannot describe it...
