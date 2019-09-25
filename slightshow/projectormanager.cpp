@@ -48,11 +48,18 @@ ProjectorManager::close()
     m_serial->close();
 }
 
+Projector*
+ProjectorManager::projector(quint8 index) const
+{
+    if (index >= 2) return nullptr;
+    return m_projector[index];
+}
+
 void
 ProjectorManager::setMaximumBrightness(qreal brightness)
 {
     qCDebug(slightshowProjectorManager) << "Limiting global brightness to:" << brightness;
-    for_p( p->setBrightnessLimit(brightness) );
+    for_p( p->setBrightnessScalar(brightness) );
 }
 
 bool
@@ -66,14 +73,16 @@ ProjectorManager::forward(qreal time)
     m_next->fade(1, time);
 
     auto conn = std::make_shared<QMetaObject::Connection>();
-    *conn = connect(m_current, &Projector::fadeFinished, [this, conn]() {
+    *conn = connect(m_current, &Projector::fadeFinished, [this, conn]()
+    {
         QObject::disconnect(*conn);
 
         qCDebug(slightshowProjectorManager) << "Sliding forward";
         m_current->slide(Projector::Direction::Forward);
 
         auto conn2 = std::make_shared<QMetaObject::Connection>();
-        *conn2 = connect(m_current, &Projector::slideFinished, [this, conn2](Projector::Direction) {
+        *conn2 = connect(m_current, &Projector::slideFinished, [this, conn2](Projector::Direction)
+        {
             QObject::disconnect(*conn2);
 
             emit forwardFinished();
@@ -97,7 +106,8 @@ ProjectorManager::backward(qreal time)
     m_next->slide(Projector::Direction::Backward);
 
     auto conn = std::make_shared<QMetaObject::Connection>();
-    *conn = connect(m_next, &Projector::slideFinished, [this, conn, time](Projector::Direction) {
+    *conn = connect(m_next, &Projector::slideFinished, [this, conn, time](Projector::Direction)
+    {
         QObject::disconnect(*conn);
 
         qCDebug(slightshowProjectorManager) << "Fading backward";
@@ -105,7 +115,8 @@ ProjectorManager::backward(qreal time)
         m_next->fade(1, time);
 
         auto conn2 = std::make_shared<QMetaObject::Connection>();
-        *conn2 = connect(m_next, &Projector::fadeFinished, [this, conn2]() {
+        *conn2 = connect(m_next, &Projector::fadeFinished, [this, conn2]()
+        {
             QObject::disconnect(*conn2);
 
             emit backwardFinished();
@@ -115,6 +126,7 @@ ProjectorManager::backward(qreal time)
             m_is_moving = false;
         });
     });
+    return true;
 }
 
 } // namespace slightshow

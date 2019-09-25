@@ -24,6 +24,9 @@ public:
     void
     close();
 
+    Projector*
+    projector(quint8 index) const;
+
 signals:
     void
     forwardFinished();
@@ -48,7 +51,7 @@ private:
     Projector *m_current;
     Projector *m_next;
 
-    bool m_is_moving = false;
+    bool volatile m_is_moving = false;
 };
 
 } // namespace slightshow

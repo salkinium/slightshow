@@ -54,7 +54,7 @@ signals:
     fadeFinished();
 
     void
-    brightnessChanged(qreal brightness);
+    brightnessChanged(qreal brightness, qreal scalar);
 
     void
     slideFinished(Direction direction);
@@ -70,7 +70,7 @@ public slots:
     setBrightness(qreal brightness);
 
     void
-    setBrightnessLimit(qreal brightness);
+    setBrightnessScalar(qreal brightness);
 
     void
     slide(Direction direction);
@@ -94,7 +94,7 @@ private:
 
     QSerialPort *m_serial = nullptr;
     qreal m_brightness = 0;
-    qreal m_brightness_limit = 1.0;
+    qreal m_brightness_scalar = 1.0;
 
     bool m_is_sliding = false;
 };

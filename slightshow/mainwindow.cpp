@@ -48,27 +48,40 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->limitBrightness, &QSlider::sliderMoved, this, [this](int value)
     {
-        m_manager->setMaximumBrightness(value / 99.0);
+        m_manager->setMaximumBrightness(value / 100.0);
     });
 
     connect(ui->forward, &QPushButton::clicked, this, [this]()
     {
-        m_manager->forward(1.8);
+        m_manager->forward(2);
         ui->forward->setEnabled(false);
+        ui->backward->setEnabled(false);
     });
     connect(m_manager, &ProjectorManager::forwardFinished, this, [this]()
     {
         ui->forward->setEnabled(true);
+        ui->backward->setEnabled(true);
     });
 
     connect(ui->backward, &QPushButton::clicked, this, [this]()
     {
-        m_manager->backward(2);
+        m_manager->backward(1.8);
+        ui->forward->setEnabled(false);
         ui->backward->setEnabled(false);
     });
     connect(m_manager, &ProjectorManager::backwardFinished, this, [this]()
     {
+        ui->forward->setEnabled(true);
         ui->backward->setEnabled(true);
+    });
+
+    connect(m_manager->projector(0), &Projector::brightnessChanged, this, [this](qreal brightness)
+    {
+        ui->projector0->setValue(brightness * 100);
+    });
+    connect(m_manager->projector(1), &Projector::brightnessChanged, this, [this](qreal brightness)
+    {
+        ui->projector1->setValue(brightness * 100);
     });
 }
 

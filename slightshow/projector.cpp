@@ -29,8 +29,7 @@ void
 Projector::fade(qreal brightness, qreal time)
 {
     brightness = qFabs(brightness);
-    if (brightness > m_brightness_limit)
-        brightness = m_brightness_limit;
+    if (brightness > 1.0) brightness = 1.0;
 
     m_animation->setDuration(time * 1000.0);
     m_animation->setStartValue(this->brightness());
@@ -50,21 +49,20 @@ void
 Projector::setBrightness(qreal brightness)
 {
     brightness = qFabs(brightness);
-    if (brightness > m_brightness_limit)
-        brightness = m_brightness_limit;
+    if (brightness > 1.0) brightness = 1.0;
 
-    sendCommand(1, int(brightness * 1000.0));
+    sendCommand(1, int(brightness * 1000.0 * m_brightness_scalar));
 
     m_brightness = brightness;
-    emit brightnessChanged(m_brightness);
+    emit brightnessChanged(m_brightness, m_brightness_scalar);
 }
 
 void
-Projector::setBrightnessLimit(qreal brightness)
+Projector::setBrightnessScalar(qreal brightness)
 {
     brightness = qFabs(brightness);
     if (brightness > 1.0) brightness = 1.0;
-    m_brightness_limit = brightness;
+    m_brightness_scalar = brightness;
     setBrightness(m_brightness);
 }
 
