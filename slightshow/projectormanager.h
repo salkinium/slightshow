@@ -39,6 +39,12 @@ public slots:
     setMaximumBrightness(qreal brightness);
 
     bool
+    restart();
+
+    bool
+    disable();
+
+    bool
     forward(qreal time);
 
     bool

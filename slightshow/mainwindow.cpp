@@ -75,6 +75,16 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->backward->setEnabled(true);
     });
 
+    connect(ui->restart, &QPushButton::clicked, this, [this]()
+    {
+        m_manager->restart();
+    });
+
+    connect(ui->disable, &QPushButton::clicked, this, [this]()
+    {
+        m_manager->disable();
+    });
+
     connect(m_manager->projector(0), &Projector::brightnessChanged, this, [this](qreal brightness)
     {
         ui->projector0->setValue(brightness * 100);

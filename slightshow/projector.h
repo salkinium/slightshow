@@ -8,6 +8,7 @@
 #include <QLoggingCategory>
 #include <QPropertyAnimation>
 #include <QTime>
+#include <QTimer>
 
 Q_DECLARE_LOGGING_CATEGORY(slightshowProjector)
 
@@ -91,6 +92,7 @@ protected:
 private:
     const quint8 m_address;
     QPropertyAnimation *const m_animation;
+    QTimer *const m_animation_timer;
 
     QSerialPort *m_serial = nullptr;
     qreal m_brightness = 0;

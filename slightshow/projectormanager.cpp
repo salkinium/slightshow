@@ -12,7 +12,7 @@ namespace slightshow {
 ProjectorManager::ProjectorManager(QObject *parent) :
     QObject(parent), m_serial(new QSerialPort(this)),
     m_projector{new Projector(0, this), new Projector(1, this)},
-    m_current(m_projector[1]), m_next(m_projector[0])
+    m_current(m_projector[0]), m_next(m_projector[1])
 {
 }
 
@@ -60,6 +60,53 @@ ProjectorManager::setMaximumBrightness(qreal brightness)
 {
     qCDebug(slightshowProjectorManager) << "Limiting global brightness to:" << brightness;
     for_p( p->setBrightnessScalar(brightness) );
+}
+
+bool
+ProjectorManager::restart()
+{
+    if (m_is_moving) return false;
+    m_is_moving = true;
+    qCDebug(slightshowProjectorManager) << "New slides";
+
+    // Reset projector indexing
+    m_current = m_projector[0];
+    m_next = m_projector[1];
+
+    m_current->fade(0, 1);
+    m_next->fade(0, 1);
+
+    auto conn = std::make_shared<QMetaObject::Connection>();
+    *conn = connect(m_current, &Projector::fadeFinished, [this, conn]()
+    {
+        QObject::disconnect(*conn);
+
+        qCDebug(slightshowProjectorManager) << "Sliding forward";
+        m_next->slide(Projector::Direction::Forward);
+
+        auto conn2 = std::make_shared<QMetaObject::Connection>();
+        *conn2 = connect(m_next, &Projector::slideFinished, [this, conn2](Projector::Direction)
+        {
+            QObject::disconnect(*conn2);
+
+            emit forwardFinished();
+            qCDebug(slightshowProjectorManager) << "Finished moving forward";
+
+            m_is_moving = false;
+        });
+    });
+    return true;
+}
+
+bool
+ProjectorManager::disable()
+{
+    if (m_is_moving) return false;
+    qCDebug(slightshowProjectorManager) << "Disable";
+
+    m_current->fade(0, 0);
+    m_next->fade(0, 0);
+    return true;
 }
 
 bool

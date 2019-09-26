@@ -10,9 +10,12 @@ Q_LOGGING_CATEGORY(slightshowProjector, "slightshow.projector", QtDebugMsg)
 namespace slightshow {
 
 Projector::Projector(quint8 address, QObject *parent) :
-    QObject(parent), m_address(address), m_animation(new QPropertyAnimation(this, "brightness"))
+    QObject(parent), m_address(address), m_animation(new QPropertyAnimation(this, "brightness")),
+    m_animation_timer(new QTimer)
 {
-    connect(m_animation, &QPropertyAnimation::finished, this, &Projector::fadeFinished);
+//    connect(m_animation, &QPropertyAnimation::finished, this, &Projector::fadeFinished);
+    connect(m_animation_timer, &QTimer::timeout, this, &Projector::fadeFinished);
+    m_animation_timer->setSingleShot(true);
 }
 
 Projector::~Projector()
@@ -31,10 +34,17 @@ Projector::fade(qreal brightness, qreal time)
     brightness = qFabs(brightness);
     if (brightness > 1.0) brightness = 1.0;
 
-    m_animation->setDuration(time * 1000.0);
-    m_animation->setStartValue(this->brightness());
-    m_animation->setEndValue(brightness);
-    m_animation->start();
+    if (brightness > m_brightness) {
+        QEasingCurve curve = QEasingCurve::Linear;
+        m_animation->setEasingCurve(curve);
+        m_animation->setDuration(time * 1000.0);
+        m_animation->setStartValue(this->brightness());
+        m_animation->setEndValue(brightness);
+        m_animation->start();
+    } else {
+        setBrightness(brightness);
+    }
+    m_animation_timer->start(time * 1000.0);
 
     qCDebug(slightshowProjector) << m_address << "Fading" << brightness << "in" << time;
 }
@@ -106,7 +116,7 @@ Projector::sendPacket(quint8 mode, quint8 command, quint8 parameter)
         data[1] = (m_address * 8) + (mode * 2) + 1;
         data[2] = command;
         data[3] = parameter;
-        const auto now = QTime::currentTime();
+//        const auto now = QTime::currentTime();
         m_serial->write(data);
         m_serial->flush();
 //        qCDebug(slightshowProjector) << "Sent packet" << now;
